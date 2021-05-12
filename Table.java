@@ -28,8 +28,34 @@ public class Table {
         this.list4.add("-");this.list4.add("-");this.list4.add("-");this.list4.add("-");this.list4.add("-");
         this.list5.add(" ");this.list5.add("|");this.list5.add(" ");this.list5.add("|");this.list5.add(" ");
     }
-    public void print(){
+
+    public void input(){
         setLists();
+        while(true){
+
+            System.out.println("Player 1: make a move.");
+            String input = scanner.nextLine();
+
+            if(input.equals("-1")){
+                break;
+            }
+
+            if(input.equals("0,0")){
+                list1.set(0, "X");
+                continue;
+            }
+            if(input.equals("0,1")){
+                list1.set(3, "X");
+            }
+
+            print();
+        }
+        
+
+       
+    }
+    public void print(){
+        
         for(String x:list1){
             System.out.print(x);
         }
