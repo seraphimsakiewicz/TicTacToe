@@ -1,120 +1,38 @@
 
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class Table {
 
-    private Scanner scanner; // 1st space=index[0][2],2nd=index[0][6],3rd=index[0][10]
-    private String table[][] = { { "|", "  ", " ", "  ", "|", "  ", " ", "  ", "|", "  ", " ", "  ", "|" },
-            { "-------------------" }, { "|", "  ", " ", "  ", "|", "  ", " ", "  ", "|", "  ", " ", "  ", "|" },
-            { "-------------------" }, { "|", "  ", " ", "  ", "|", "  ", " ", "  ", "|", "  ", " ", "  ", "|" } };
+    private Scanner scanner;
+
+    ArrayList<String>[] al = new ArrayList[100];
 
     public Table() {
         this.scanner = new Scanner(System.in);
     }
 
-    public void setMarker(String position, int i) {
-        String marker;
-
-        if (i % 2 == 1) {
-            marker = "X";
-        } else {
-            marker = "O";
-        }
-
-        if (position.equals("1,1")) {
-            table[0][2] = marker;
-            
-        } else if (position.equals("1,2")) {
-            table[0][6] = marker;
-            
-        } else if (position.equals("1,3")) {
-            table[0][10] = marker;
-            
-        } else if (position.equals("2,1")) {
-            table[2][2] = marker;
-            
-        } else if (position.equals("2,2")) {
-            table[2][6] = marker;
-            
-        } else if (position.equals("2,3")) {
-            table[2][10] = marker;
-            
-        } else if (position.equals("3,1")) {
-            table[4][2] = marker;
-            
-        } else if (position.equals("3,2")) {
-            table[4][6] = marker;
-            
-        } else if (position.equals("3,3")) {
-            table[4][10] = marker;
-        }
-    }
-
-
-
-    public boolean isOkay(String input){
-
-        if(input.equals("1,1")&&(table[0][2].equals(" "))){
-            return true;
-        }
-        else if(input.equals("1,2")&&(table[0][6].equals(" "))){
-            return true;
-        }
-        else if(input.equals("1,3")&&(table[0][10].equals(" "))){
-            return true;
-        }
-        else if(input.equals("2,1")&&(table[2][2].equals(" "))){
-            return true;
-        }
-        else if(input.equals("2,2")&&(table[2][6].equals(" "))){
-            return true;
-        }
-        else if(input.equals("2,3")&&(table[2][10].equals(" "))){
-            return true;
-        }
-        else if(input.equals("3,1")&&(table[4][2].equals(" "))){
-            return true;
-        }
-        else if(input.equals("3,2")&&(table[4][6].equals(" "))){
-            return true;
-        }
-        else if(input.equals("3,3")&&(table[4][10].equals(" "))){
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-
     public void start() {
-    
+
+        
+        int n=returnN();
         int i = 1;
         while (true) {
-           
-            if(i==10){
-                System.out.println("It's a tie! Game over.");
-                break;
-            }
-            else if (i % 2 == 1) {
-                System.out.println("Player 1: you are X's. Make a move.");
-            } else {
-                System.out.println("Player 2: you are O's. Make a move.");
-            }
+            System.out.println(iChecker(i, n));
             String input = scanner.nextLine();
-            if (isOkay(input)==false) {
-                System.out.println("Invalid input, try again.");
+            if (input.equals("-1")) {
+                System.out.println("Game over, please come again!");
+                break;
+            } else if (!isOkay(input, n)) {
+                System.out.println("Invalid input, please try again!");
                 continue;
             }
-
             setMarker(input, i);
-
-            rowCounter(0);
-            print();
-
-            if (checkWinner() && i % 2 == 1) {
+            printTable(n);
+            if (checkWinner(n) && i % 2 == 1) {
                 System.out.println("Player 1 wins!");
                 break;
-            } else if (checkWinner() && i % 2 == 0) {
+            } else if (checkWinner(n) && i % 2 == 0) {
                 System.out.println("Player 2 wins!");
                 break;
             }
@@ -122,113 +40,213 @@ public class Table {
         }
     }
 
-    public void print() {
-
-        for (int row = 0; row < table.length; row++) {
-            for (int column = 0; column < table[row].length; column++) {
-                System.out.print(table[row][column]);
+    public int returnN(){
+        
+        System.out.print("Size of table? ");
+        while(true){
+            try {
+                int n= Integer.valueOf(scanner.nextLine());
+                if(n<1){
+                    System.out.println("Please enter a size of 1 or more");
+                        continue;
+                }
+                makeTable(n);
+                    return n;
+            } catch (Exception e) {
+                System.out.println("Please enter a valid number.");
+                continue;
             }
-            System.out.println();
         }
+        
+    }
+
+    public String iChecker(int i,int n){
+        if (i == (n * n) + 1) {// 3*3+1. 4*4+1=17 /if(i==length)
+            return "It's a tie! Game over.";
+            
+        } else if (i % 2 == 1) {
+            return "Player 1: you are X's. It's your turn!";
+        } else {
+            return "Player 2: you are O's. It's your turn!";
+        }
+    }
+
+    public void makeTable(int n) {
+
+        int rows = n;
+        int columns = n * 2;
+
+        // initializing lists
+        for (int i = 0; i < rows; i += 1) {
+            al[i] = new ArrayList<String>();
+        }
+
+        for (int a = 0; a < rows; a += 1) {
+            for (int b = 0; b <= columns; b += 1)
+
+                if (b % 2 == 0) {
+                    al[a].add("|");
+                } else {
+                    al[a].add("     ");
+                }
+        }
+        printTable(rows);
+    }
+
+    public void printTable(int n) {
+        int rows = n;
+        int columns = n * 2;
+        int dashes = ((5 * n) + (n + 1));
+
+        printDashes(dashes);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c <= columns; c++) {
+                if (c == columns) {
+                    System.out.println(al[r].get(c));
+                    printDashes(dashes);
+                    continue;
+                }
+
+                System.out.print(al[r].get(c));
+            }
+        }
+        checkWinner(rows);
+    }
+
+    public void printDashes(int dashes) {
+        for (int i = 0; i < dashes; i++) {
+            System.out.print("-");
+        }
+        System.out.println("");
 
     }
 
-    public boolean checkWinner() {
-        int c=2;
-        for (int i = 0; i <= 4; i += 2) {
-            if (rowCounter(i)) {
-                return true;
+    public boolean isOkay(String input, int n) {
+
+        if (!input.contains(",")) {
+            return false;
+        } else {
+            try {
+                String[] fullPosition = input.split(",");
+                int row = Integer.valueOf(fullPosition[0]);
+                int column = Integer.valueOf(fullPosition[1]);
+                if (row <= 0 || column <= 0) {
+                    return false;
+                } else if (al[row - 1].get(column * 2 - 1).equals("  X  ")
+                        || al[row - 1].get(column * 2 - 1).equals("  O  ")) {
+                    return false;
+                }
+                return row <= n && column <= n;
+            } catch (Exception e) {
+                return false;
             }
-            else if(columnCounter(c)){
+        }
+    }
+
+    public void setMarker(String position, int i) {
+        String[] fullPosition = position.split(",");
+        String marker;
+        int row = Integer.valueOf(fullPosition[0]);
+        int column = Integer.valueOf(fullPosition[1]);
+        if (i % 2 == 1) {
+            marker = "  X  ";
+        } else {
+            marker = "  O  ";
+        }
+
+        al[row - 1].set((column * 2) - 1, marker);
+
+    }
+
+    public boolean checkWinner(int size) {
+        int c = 1;
+        for (int i = 0; i < size; i += 1) {
+            if (rowCounter(i, size)) {
                 return true;
-            }
-            else if(checkDiagonals()){
+            } else if (columnCounter(c, size)) {
                 return true;
-            }
-                c+=4;
+            } 
+            c += 2;
+        }
+         if (checkDiagonals(size)) {
+            return true;
         }
         return false;
     }
 
-    public boolean rowCounter(int row) {
+    public boolean rowCounter(int row, int size) {
         int xSum = 0;
         int oSum = 0;
 
-        for (int i = 2; i <= 10; i += 4) {
-            if (table[row][i].equals("X")) {
+        for (String position : al[row]) {
+            if (position.equals("  X  ")) {
                 xSum += 1;
-            } else if (table[row][i].equals("O")) {
+            } else if (position.equals("  O  ")) {
                 oSum += 1;
             }
         }
-        if (xSum == 3 || oSum == 3) {
-            return true;
-        }
-        return false;
+
+        return xSum == size || oSum == size;
 
     }
 
-    public boolean columnCounter(int column) {
+    public boolean columnCounter(int column, int size) {
         int xSum = 0;
         int oSum = 0;
 
-        for(int i=0;i<=4;i+=2){
-            if(table[i][column].equals("X")){
-                xSum+=1;
-            }else if(table[i][column].equals("O")){
-                oSum+=1;
+        for (int i = 0; i < size; i += 1) {
+            if (al[i].get(column).equals("  X  ")) {
+                xSum += 1;
+            } else if (al[i].get(column).equals("  O  ")) {
+                oSum += 1;
             }
         }
 
-        if (xSum == 3 || oSum == 3) {
-            return true;
-        }
-        return false;
+        return xSum == size || oSum == size;
     }
 
-    public boolean checkDiagonals(){
-        int xSum1=0;
-        int oSum1=0;
 
-        //int r1 in loop
-        int c1=2;
 
-        int xSum2=0;
-        int oSum2=0;
+    public boolean checkDiagonals(int size) {
+        int xSum1 = 0;
+        int oSum1 = 0;
 
-        int r2=0;
-        int c2=10;
+        // int r1 in loop //diagnol NW to SE
+        int c1 = 1;
 
-        for(int r1=0;r1<=4;r1+=2)
-        {
-                //table[0][2]
-            if(table[r1][c1]=="X"){
-                xSum1+=1;
+        int xSum2 = 0;
+        int oSum2 = 0;
+
+        int r2 = size-1;      //diagnol SW to NE
+        int c2 = 1;
+
+        for (int r1 = 0; r1 < size; r1 += 1) {
+            // table[0][2]
+            if (al[r1].get(c1).equals("  X  ")) {
+                xSum1 += 1;
+            } else if (al[r1].get(c1).equals("  O  ")) {
+                oSum1 += 1;
             }
-            else if(table[r1][c1]=="O"){
-                oSum1+=1;
+
+            if (al[r2].get(c2).equals("  X  ")) {
+                xSum2 += 1;
+            } else if (al[r2].get(c2).equals("  O  ")) {
+                oSum2 += 1;
             }
 
-            if(table[r2][c2]=="X"){
-                xSum2+=1;
-            }
-            else if(table[r2][r2]=="O"){
-                oSum2+=1;
-            }
-            
-            c1+=4;
-            r2+=2;
-            c2-=4;
+            c1 += 2;
+            r2 -= 1;
+            c2 +=2;
 
         }
-        if(xSum1==3 || oSum1==3){
+        if (xSum1 == size || oSum1 == size) {
             return true;
-        }
-        else if(xSum2==3 || oSum2==3){
+        } else if (xSum2 == size || oSum2 == size) {
             return true;
         }
         return false;
-        
+
     }
 }
+
 
