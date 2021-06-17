@@ -1,6 +1,7 @@
 
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Table {
 
@@ -15,10 +16,17 @@ public class Table {
     public void start() {
 
         
-        int n=returnN();
+        int n=returnSize();
+        int p= setPlayers();
+        String[]symbols= setSymbols(p);
+        System.out.println(Arrays.toString(symbols));
         int i = 1;
+        int player=1;
         while (true) {
-            System.out.println(iChecker(i, n));
+            if(Tie(i, n)){
+                break;
+            }
+            System.out.println("Player " + player + " please make a move.");
             String input = scanner.nextLine();
             if (input.equals("-1")) {
                 System.out.println("Game over, please come again!");
@@ -27,20 +35,24 @@ public class Table {
                 System.out.println("Invalid input, please try again!");
                 continue;
             }
-            setMarker(input, i);
+            setMarker(input, i,symbols[player-1]);
+
             printTable(n);
-            if (checkWinner(n) && i % 2 == 1) {
-                System.out.println("Player 1 wins!");
-                break;
-            } else if (checkWinner(n) && i % 2 == 0) {
-                System.out.println("Player 2 wins!");
+            if (aPlayerWon(n, symbols)) {
                 break;
             }
+
             i++;
+            player++;
+            if(player==symbols.length+1){
+                player=1;
+            }
+
+            
         }
     }
 
-    public int returnN(){
+    public int returnSize(){
         
         System.out.print("Size of table? ");
         while(true){
@@ -60,16 +72,39 @@ public class Table {
         
     }
 
-    public String iChecker(int i,int n){
-        if (i == (n * n) + 1) {// 3*3+1. 4*4+1=17 /if(i==length)
-            return "It's a tie! Game over.";
-            
-        } else if (i % 2 == 1) {
-            return "Player 1: you are X's. It's your turn!";
-        } else {
-            return "Player 2: you are O's. It's your turn!";
+    public int setPlayers(){
+        System.out.print("How many players? ");
+        while(true){
+            try {
+                int p= Integer.valueOf(scanner.nextLine());
+                if(p<2){
+                    System.out.println("Game needs 2 or more players.");
+                        continue;
+                }
+                 return p;
+            } catch (Exception e) {
+                System.out.println("Please enter a valid number.");
+                continue;
+            }
         }
     }
+
+    public String[] setSymbols(int p){
+        String[]players = new String[p];
+        for(int i=0;i<p;i++){
+            System.out.print("Player "+ (i+1) +" set your symbol. ");
+            players[i]="  " + scanner.nextLine() + "  ";
+        }
+        return players;
+    }
+
+    public boolean Tie(int i,int n){
+        if (i == (n * n) + 1) {// 3*3+1. 4*4+1=17 /if(i==length)
+            System.out.println("It's a tie! Game over.");
+            return true;
+    }
+    return false;
+}
 
     public void makeTable(int n) {
 
@@ -110,7 +145,6 @@ public class Table {
                 System.out.print(al[r].get(c));
             }
         }
-        checkWinner(rows);
     }
 
     public void printDashes(int dashes) {
@@ -122,18 +156,14 @@ public class Table {
     }
 
     public boolean isOkay(String input, int n) {
-
-        if (!input.contains(",")) {
-            return false;
-        } else {
             try {
                 String[] fullPosition = input.split(",");
                 int row = Integer.valueOf(fullPosition[0]);
                 int column = Integer.valueOf(fullPosition[1]);
                 if (row <= 0 || column <= 0) {
                     return false;
-                } else if (al[row - 1].get(column * 2 - 1).equals("  X  ")
-                        || al[row - 1].get(column * 2 - 1).equals("  O  ")) {
+                } else if (!al[row - 1].get(column * 2 - 1).equals("     ")
+                        || !al[row - 1].get(column * 2 - 1).equals("     ")) {
                     return false;
                 }
                 return row <= n && column <= n;
@@ -141,97 +171,93 @@ public class Table {
                 return false;
             }
         }
-    }
+    
 
-    public void setMarker(String position, int i) {
+    public void setMarker(String position, int i,String symbol) {
+
+        //need to make dynamic for any symbol add symbol to parameter.
         String[] fullPosition = position.split(",");
-        String marker;
         int row = Integer.valueOf(fullPosition[0]);
         int column = Integer.valueOf(fullPosition[1]);
-        if (i % 2 == 1) {
-            marker = "  X  ";
-        } else {
-            marker = "  O  ";
-        }
+        
 
-        al[row - 1].set((column * 2) - 1, marker);
+        al[row - 1].set((column * 2) - 1, symbol);
 
     }
 
-    public boolean checkWinner(int size) {
+    public boolean aPlayerWon(int size, String[]symbols){
+        for(int i=0;i<symbols.length;i++){
+            if(won(size,symbols[i])){
+                System.out.println("Player " + (i+1)+ " wins!");
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    public boolean won(int size,String symbol) {
         int c = 1;
         for (int i = 0; i < size; i += 1) {
-            if (rowCounter(i, size)) {
+            if (rowCounter(i, size,symbol)) {
                 return true;
-            } else if (columnCounter(c, size)) {
+            } else if (columnCounter(c, size,symbol)) {
                 return true;
             } 
             c += 2;
         }
-         if (checkDiagonals(size)) {
+         if (checkDiagonals(size,symbol)) {
             return true;
         }
         return false;
     }
 
-    public boolean rowCounter(int row, int size) {
-        int xSum = 0;
-        int oSum = 0;
+    public boolean rowCounter(int row, int size, String symbol) {//need to make dynamic for any symbol add symbol to parameter.
+        int sum = 0;
 
         for (String position : al[row]) {
-            if (position.equals("  X  ")) {
-                xSum += 1;
-            } else if (position.equals("  O  ")) {
-                oSum += 1;
-            }
+            if (position.equals(symbol)) {
+                sum += 1;
         }
-
-        return xSum == size || oSum == size;
+    }
+        return sum == size;
 
     }
 
-    public boolean columnCounter(int column, int size) {
-        int xSum = 0;
-        int oSum = 0;
+    public boolean columnCounter(int column, int size,String symbol) {//need to make dynamic for any symbol add symbol to parameter.
+        int sum = 0;
+
 
         for (int i = 0; i < size; i += 1) {
-            if (al[i].get(column).equals("  X  ")) {
-                xSum += 1;
-            } else if (al[i].get(column).equals("  O  ")) {
-                oSum += 1;
-            }
+            if (al[i].get(column).equals(symbol)) {
+                sum += 1;
         }
+    }
 
-        return xSum == size || oSum == size;
+        return sum == size;
     }
 
 
 
-    public boolean checkDiagonals(int size) {
-        int xSum1 = 0;
-        int oSum1 = 0;
+    public boolean checkDiagonals(int size,String symbol) {//need to make dynamic for any symbol add symbol to parameter.
+        int sum1 = 0;
 
         // int r1 in loop //diagnol NW to SE
         int c1 = 1;
 
-        int xSum2 = 0;
-        int oSum2 = 0;
+        int sum2 = 0;
 
         int r2 = size-1;      //diagnol SW to NE
         int c2 = 1;
 
         for (int r1 = 0; r1 < size; r1 += 1) {
             // table[0][2]
-            if (al[r1].get(c1).equals("  X  ")) {
-                xSum1 += 1;
-            } else if (al[r1].get(c1).equals("  O  ")) {
-                oSum1 += 1;
+            if (al[r1].get(c1).equals(symbol)) {
+                sum1 += 1;
             }
 
-            if (al[r2].get(c2).equals("  X  ")) {
-                xSum2 += 1;
-            } else if (al[r2].get(c2).equals("  O  ")) {
-                oSum2 += 1;
+            if (al[r2].get(c2).equals(symbol)) {
+                sum2 += 1;
             }
 
             c1 += 2;
@@ -239,12 +265,9 @@ public class Table {
             c2 +=2;
 
         }
-        if (xSum1 == size || oSum1 == size) {
-            return true;
-        } else if (xSum2 == size || oSum2 == size) {
-            return true;
-        }
-        return false;
+      
+        return sum1 == size || sum2 == size;
+        
 
     }
 }
